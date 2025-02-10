@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/litvinovmitch11/avito-merch-store/internal/cmd"
 
 func main() {
-	fmt.Println("Start!")
+	cmd.Run()
 }
