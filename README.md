@@ -1,1 +1,1 @@
-# avito-merch-store
+# Avito test assignment for a Backend developer
