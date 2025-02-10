@@ -1,1 +1,1 @@
-# Avito test assignment for a Backend developer
+# Test assignment - Avito backend internship
