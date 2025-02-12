@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS merch_store.products (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    price INTEGER NOT NULL CHECK (price > 0),
+    created_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
+    updated_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL
+);

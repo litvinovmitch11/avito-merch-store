@@ -1,0 +1,2 @@
+DROP SCHEMA IF EXISTS merch_store CASCADE;
+CREATE SCHEMA merch_store;

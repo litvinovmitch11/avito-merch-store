@@ -17,10 +17,18 @@ type Server struct {
 }
 
 func NewServer() Server {
+	// repositories init
+
+	// services init
+	authService := auth.Service{}
+
+	// handlers init
+	postApiAuthHandler := handlers.PostApiAuthHandler{
+		AuthService: authService,
+	}
+
 	return Server{
-		PostApiAuthHandler: handlers.PostApiAuthHandler{
-			AuthService: auth.Service{},
-		},
+		PostApiAuthHandler: postApiAuthHandler,
 	}
 }
 
