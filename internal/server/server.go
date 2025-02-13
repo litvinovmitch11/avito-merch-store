@@ -7,28 +7,39 @@ import (
 
 	api "github.com/litvinovmitch11/avito-merch-store/internal/generated"
 	"github.com/litvinovmitch11/avito-merch-store/internal/handlers"
-	"github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
+	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
+	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
+	productsservice "github.com/litvinovmitch11/avito-merch-store/internal/services/products"
 )
 
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	PostApiAuthHandler handlers.PostApiAuthHandler
+	PostApiAuthHandler          *handlers.PostApiAuthHandler
+	PostAdminProductsAddHandler *handlers.PostAdminProductsAddHandler
 }
 
 func NewServer() Server {
 	// repositories init
+	productsRepository := productsrepo.Repository{}
 
 	// services init
-	authService := auth.Service{}
+	authService := authservice.Service{}
+	productsService := productsservice.Service{
+		ProductsRepository: &productsRepository,
+	}
 
 	// handlers init
 	postApiAuthHandler := handlers.PostApiAuthHandler{
-		AuthService: authService,
+		AuthService: &authService,
+	}
+	postAdminProductsAddHandler := handlers.PostAdminProductsAddHandler{
+		ProductsService: &productsService,
 	}
 
 	return Server{
-		PostApiAuthHandler: postApiAuthHandler,
+		PostApiAuthHandler:          &postApiAuthHandler,
+		PostAdminProductsAddHandler: &postAdminProductsAddHandler,
 	}
 }
 
@@ -71,4 +82,11 @@ func (s Server) GetApiInfo(w http.ResponseWriter, r *http.Request) {
 // (POST /api/sendCoin)
 func (s Server) PostApiSendCoin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("PostApiSendCoin")
+}
+
+// Добавление нового мерча.
+// (POST /admin/products/add)
+func (s Server) PostAdminProductsAdd(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("PostAdminProductsAdd")
+	s.PostAdminProductsAddHandler.PostAdminProductsAdd()
 }

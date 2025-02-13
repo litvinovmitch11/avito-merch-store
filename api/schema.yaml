@@ -142,7 +142,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-/admin/product/add:
+  /admin/products/add:
     post:
       summary: Добавление нового мерча.
       requestBody:

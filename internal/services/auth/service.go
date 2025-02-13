@@ -11,7 +11,7 @@ type Service struct {
 
 var _ AuthService = (*Service)(nil)
 
-func (s Service) GetToken(user entities.UserAuth) entities.UserToken {
+func (s *Service) GetToken(user entities.UserAuth) entities.UserToken {
 	token := "token: "
 	token += user.Username
 	token += " "
