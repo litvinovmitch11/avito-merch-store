@@ -5,6 +5,9 @@ all: clean gen run
 run:
 	go run cmd/app/main.go
 
+run-migration:
+	bash scripts/run_migrations.sh
+
 gen-api:
 	go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -config $(OAPI_CODEGEN_CONFIG_FILE) api/schema.yaml
 
