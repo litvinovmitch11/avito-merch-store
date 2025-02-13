@@ -17,3 +17,16 @@ func postApiAuthEntityToResponse(entity entities.UserToken) api.AuthResponse {
 		Token: entity.Token,
 	}
 }
+
+func postAdminProductsAddToEntity(request api.ProductAddRequest) entities.Product {
+	return entities.Product{
+		Title: request.Title,
+		Price: request.Price,
+	}
+}
+
+func postAdminProductsAddEntityToResponse(id string) api.ProductAddResponse {
+	return api.ProductAddResponse{
+		Id: id,
+	}
+}

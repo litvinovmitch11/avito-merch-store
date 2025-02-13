@@ -275,6 +275,8 @@ components:
         id:
           type: string
           description: ID добавленного мерча.
+      required:
+        - id
 
     ProductAddRequest:
       type: object
@@ -286,5 +288,5 @@ components:
           type: integer
           description: Стоимость мерча.
       required:
-        - username
-        - password
+        - title
+        - price

@@ -1,11 +1,16 @@
 package products
 
 import (
+	"fmt"
+
+	"github.com/google/uuid"
+
+	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 )
 
 type ProductsService interface {
-	AddProduct()
+	AddProduct(product entities.Product) (string, error)
 }
 
 type Service struct {
@@ -14,6 +19,13 @@ type Service struct {
 
 var _ ProductsService = (*Service)(nil)
 
-func (s *Service) AddProduct() {
-	s.ProductsRepository.AddProduct()
+func (s *Service) AddProduct(product entities.Product) (string, error) {
+	product.Id = uuid.NewString()
+
+	err := s.ProductsRepository.AddProduct(product)
+	if err != nil {
+		return "", fmt.Errorf("AddProduct fail: %w", err)
+	}
+
+	return product.Id, nil
 }

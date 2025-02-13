@@ -5,23 +5,33 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/litvinovmitch11/avito-merch-store/internal/connections/postgresql"
 	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 	"github.com/litvinovmitch11/avito-merch-store/internal/handlers"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
 	productsservice "github.com/litvinovmitch11/avito-merch-store/internal/services/products"
+	"github.com/rs/zerolog"
 )
 
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
+	Logger                      *zerolog.Logger
 	PostApiAuthHandler          *handlers.PostApiAuthHandler
 	PostAdminProductsAddHandler *handlers.PostAdminProductsAddHandler
 }
 
-func NewServer() Server {
+func NewServer(
+	logger *zerolog.Logger,
+) Server {
+	// connections init
+	postgresqlConnection := postgresql.Connection{}
+
 	// repositories init
-	productsRepository := productsrepo.Repository{}
+	productsRepository := productsrepo.Repository{
+		PostgresqlConnection: &postgresqlConnection,
+	}
 
 	// services init
 	authService := authservice.Service{}
@@ -38,6 +48,7 @@ func NewServer() Server {
 	}
 
 	return Server{
+		Logger:                      logger,
 		PostApiAuthHandler:          &postApiAuthHandler,
 		PostAdminProductsAddHandler: &postAdminProductsAddHandler,
 	}
@@ -51,12 +62,14 @@ func (s Server) PostApiAuth(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&request)
 	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail before process PostApiAuth")
 		return
 	}
 
 	entity := postApiAuthRequestToEntity(request)
 	response, err := s.PostApiAuthHandler.PostApiAuth(entity)
 	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostApiAuth")
 		return
 	}
 
@@ -87,6 +100,24 @@ func (s Server) PostApiSendCoin(w http.ResponseWriter, r *http.Request) {
 // Добавление нового мерча.
 // (POST /admin/products/add)
 func (s Server) PostAdminProductsAdd(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PostAdminProductsAdd")
-	s.PostAdminProductsAddHandler.PostAdminProductsAdd()
+	var request api.ProductAddRequest
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&request)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail before process PostAdminProductsAdd")
+		return
+	}
+
+	entity := postAdminProductsAddToEntity(request)
+	response, err := s.PostAdminProductsAddHandler.PostAdminProductsAdd(entity)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostAdminProductsAdd")
+		return
+	}
+
+	serverResponse := postAdminProductsAddEntityToResponse(response)
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(serverResponse)
 }

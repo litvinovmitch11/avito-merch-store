@@ -70,16 +70,16 @@ type InfoResponse struct {
 // ProductAddRequest defines model for ProductAddRequest.
 type ProductAddRequest struct {
 	// Price Стоимость мерча.
-	Price *int `json:"price,omitempty"`
+	Price int `json:"price"`
 
 	// Title Название мерча.
-	Title *string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 
 // ProductAddResponse defines model for ProductAddResponse.
 type ProductAddResponse struct {
 	// Id ID добавленного мерча.
-	Id *string `json:"id,omitempty"`
+	Id string `json:"id"`
 }
 
 // SendCoinRequest defines model for SendCoinRequest.
