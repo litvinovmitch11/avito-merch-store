@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	api "github.com/litvinovmitch11/avito-merch-store/internal/generated"
+	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 	"github.com/litvinovmitch11/avito-merch-store/internal/handlers"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"

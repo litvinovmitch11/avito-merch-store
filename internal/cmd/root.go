@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	api "github.com/litvinovmitch11/avito-merch-store/internal/generated"
+	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 	"github.com/litvinovmitch11/avito-merch-store/internal/server"
 )
 

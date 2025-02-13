@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
-	api "github.com/litvinovmitch11/avito-merch-store/internal/generated"
+	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 )
 
 func postApiAuthRequestToEntity(request api.AuthRequest) entities.UserAuth {
