@@ -142,6 +142,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+/admin/product/add:
+    post:
+      summary: Добавление нового мерча.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductAddRequest'
+      responses:
+        '200':
+          description: Успешное добавление.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAddResponse'
+        '400':
+          description: Неверный запрос.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Неавторизован.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -150,6 +185,13 @@ components:
       bearerFormat: JWT
 
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: string
+          description: Сообщение об ошибке, описывающее проблему.
+
     InfoResponse:
       type: object
       properties:
@@ -193,13 +235,6 @@ components:
                     type: integer
                     description: Количество отправленных монет.
 
-    ErrorResponse:
-      type: object
-      properties:
-        errors:
-          type: string
-          description: Сообщение об ошибке, описывающее проблему.
-
     AuthRequest:
       type: object
       properties:
@@ -233,3 +268,23 @@ components:
       required:
         - toUser
         - amount
+
+    ProductAddResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID добавленного мерча.
+
+    ProductAddRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название мерча.
+        price:
+          type: integer
+          description: Стоимость мерча.
+      required:
+        - username
+        - password

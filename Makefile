@@ -2,7 +2,7 @@ OAPI_CODEGEN_CONFIG_FILE = configs/oapi-codegen-config.yaml
 
 all: clean gen run
 
-run: 
+run:
 	go run cmd/app/main.go
 
 gen:
