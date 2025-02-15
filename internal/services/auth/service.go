@@ -40,7 +40,13 @@ func (s *Service) CreateUser(userAuth entities.UserAuth) (string, error) {
 		HashedPassword: string(hashedPassword),
 	}
 
-	err = s.AuthRepository.CreateUser(user, pd)
+	balance := entities.Balance{
+		ID:     uuid.NewString(),
+		UserID: user.ID,
+		Amount: 1000,
+	}
+
+	err = s.AuthRepository.CreateUser(user, pd, balance)
 	if err != nil {
 		return "", fmt.Errorf("CreateUser fail: %w", err)
 	}

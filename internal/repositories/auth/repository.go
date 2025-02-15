@@ -18,7 +18,7 @@ var (
 )
 
 type AuthRepository interface {
-	CreateUser(user entities.User, userPD entities.UserPersonalData) error
+	CreateUser(user entities.User, userPD entities.UserPersonalData, balance entities.Balance) error
 
 	GetUserByUsername(username string) (entities.User, error)
 	GetPersonalData(userID string) (entities.UserPersonalData, error)
@@ -30,7 +30,7 @@ type Repository struct {
 
 var _ AuthRepository = (*Repository)(nil)
 
-func (r *Repository) CreateUser(user entities.User, userPD entities.UserPersonalData) error {
+func (r *Repository) CreateUser(user entities.User, userPD entities.UserPersonalData, balance entities.Balance) error {
 	db, tx, err := r.PostgresqlConnection.CreateTranscation()
 	if err != nil {
 		return fmt.Errorf("CreateTranscation fail: %w", err)
@@ -49,7 +49,7 @@ func (r *Repository) CreateUser(user entities.User, userPD entities.UserPersonal
 
 	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, u_q)
 	if err != nil {
-		return fmt.Errorf("ExecuteInsertQuery fail: %w", err)
+		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
 	}
 
 	pd_m := postgresql.UserPDEntityToPDModel(userPD)
@@ -67,7 +67,25 @@ func (r *Repository) CreateUser(user entities.User, userPD entities.UserPersonal
 
 	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, pd_q)
 	if err != nil {
-		return fmt.Errorf("ExecuteInsertQuery fail: %w", err)
+		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
+	}
+
+	s_m := postgresql.BalaceEntityToStorageModel(balance)
+	s_q := table.Storage.
+		INSERT(
+			table.Storage.ID,
+			table.Storage.UserID,
+			table.Storage.Balance,
+		).
+		VALUES(
+			s_m.ID,
+			s_m.UserID,
+			s_m.Balance,
+		)
+
+	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, s_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
 	}
 
 	err = r.PostgresqlConnection.FinishTranscation(db, tx)

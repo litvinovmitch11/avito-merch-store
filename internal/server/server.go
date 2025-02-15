@@ -56,7 +56,8 @@ func NewServer(
 		ProductsRepository: &productsRepository,
 	}
 	storageService := storageservice.Service{
-		StorageRepository: &storageRepository,
+		ProductsRepository: &productsRepository,
+		StorageRepository:  &storageRepository,
 	}
 
 	// handlers init

@@ -50,3 +50,19 @@ func PDModelToEntity(model model.PersonalData) entities.UserPersonalData {
 		HashedPassword: model.HashedPassword,
 	}
 }
+
+func BalaceEntityToStorageModel(balance entities.Balance) model.Storage {
+	return model.Storage{
+		ID:      balance.ID,
+		UserID:  balance.UserID,
+		Balance: int32(balance.Amount),
+	}
+}
+
+func StorageModelToEntity(model model.Storage) entities.Balance {
+	return entities.Balance{
+		ID:     model.ID,
+		UserID: model.UserID,
+		Amount: int(model.Balance),
+	}
+}

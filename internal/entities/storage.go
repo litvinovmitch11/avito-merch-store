@@ -5,3 +5,9 @@ type SendCoin struct {
 	ToUser   string `json:"toUser"`
 	FromUser string
 }
+
+type Balance struct {
+	ID     string
+	UserID string
+	Amount int
+}
