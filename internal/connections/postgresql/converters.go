@@ -21,17 +21,32 @@ func ProductModelToEntity(model model.Products) entities.Product {
 	}
 }
 
-func UserAuthEntityToUserModel(entity entities.UserAuth) model.Users {
+func UserEntityToUserModel(entity entities.User) model.Users {
 	return model.Users{
 		ID:       entity.ID,
 		Username: entity.Username,
 	}
 }
 
-func UserAuthEntityToPDModel(entity entities.UserPersonalData) model.PersonalData {
+func UserModelToEntity(model model.Users) entities.User {
+	return entities.User{
+		ID:       model.ID,
+		Username: model.Username,
+	}
+}
+
+func UserPDEntityToPDModel(entity entities.UserPersonalData) model.PersonalData {
 	return model.PersonalData{
 		ID:             entity.ID,
 		UserID:         entity.UserID,
 		HashedPassword: entity.HashedPassword,
+	}
+}
+
+func PDModelToEntity(model model.PersonalData) entities.UserPersonalData {
+	return entities.UserPersonalData{
+		ID:             model.ID,
+		UserID:         model.UserID,
+		HashedPassword: model.HashedPassword,
 	}
 }

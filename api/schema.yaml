@@ -145,6 +145,8 @@ paths:
   /admin/products/add:
     post:
       summary: Добавление нового мерча.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:

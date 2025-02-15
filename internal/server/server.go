@@ -11,6 +11,7 @@ import (
 	authrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/auth"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
+	jwtservice "github.com/litvinovmitch11/avito-merch-store/internal/services/jwt"
 	productsservice "github.com/litvinovmitch11/avito-merch-store/internal/services/products"
 	"github.com/rs/zerolog"
 )
@@ -41,6 +42,7 @@ func NewServer(
 	authService := authservice.Service{
 		AuthRepository: &authRepository,
 	}
+	JWTService := jwtservice.Service{}
 	productsService := productsservice.Service{
 		ProductsRepository: &productsRepository,
 	}
@@ -48,9 +50,12 @@ func NewServer(
 	// handlers init
 	postApiAuthHandler := handlers.PostApiAuthHandler{
 		AuthService: &authService,
+		JWTService:  &JWTService,
 	}
 	postAdminProductsAddHandler := handlers.PostAdminProductsAddHandler{
+		AuthService:     &authService,
 		ProductsService: &productsService,
+		JWTService:      &JWTService,
 	}
 
 	return Server{
@@ -115,8 +120,9 @@ func (s Server) PostAdminProductsAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token := r.Header.Get("Authorization")
 	entity := postAdminProductsAddToEntity(request)
-	response, err := s.PostAdminProductsAddHandler.PostAdminProductsAdd(entity)
+	response, err := s.PostAdminProductsAddHandler.PostAdminProductsAdd(token, entity)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process PostAdminProductsAdd")
 		return
