@@ -12,6 +12,7 @@ package table
 func UseSchema(schema string) {
 	PersonalData = PersonalData.FromSchema(schema)
 	Products = Products.FromSchema(schema)
+	Storage = Storage.FromSchema(schema)
 	Transactions = Transactions.FromSchema(schema)
 	Users = Users.FromSchema(schema)
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/litvinovmitch11/avito-merch-store/internal/connections/postgresql"
@@ -10,17 +9,24 @@ import (
 	"github.com/litvinovmitch11/avito-merch-store/internal/handlers"
 	authrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/auth"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
+	storagerepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/storage"
 	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
 	jwtservice "github.com/litvinovmitch11/avito-merch-store/internal/services/jwt"
 	productsservice "github.com/litvinovmitch11/avito-merch-store/internal/services/products"
+	storageservice "github.com/litvinovmitch11/avito-merch-store/internal/services/storage"
+
 	"github.com/rs/zerolog"
 )
 
 var _ api.ServerInterface = (*Server)(nil)
 
 type Server struct {
-	Logger                      *zerolog.Logger
+	Logger *zerolog.Logger
+
 	PostApiAuthHandler          *handlers.PostApiAuthHandler
+	GetApiBuyItemHandler        *handlers.GetApiBuyItemHandler
+	GetApiInfoHandler           *handlers.GetApiInfoHandler
+	PostApiSendCoinHandler      *handlers.PostApiSendCoinHandler
 	PostAdminProductsAddHandler *handlers.PostAdminProductsAddHandler
 }
 
@@ -37,6 +43,9 @@ func NewServer(
 	productsRepository := productsrepo.Repository{
 		PostgresqlConnection: &postgresqlConnection,
 	}
+	storageRepository := storagerepo.Repository{
+		PostgresqlConnection: &postgresqlConnection,
+	}
 
 	// services init
 	authService := authservice.Service{
@@ -46,11 +55,27 @@ func NewServer(
 	productsService := productsservice.Service{
 		ProductsRepository: &productsRepository,
 	}
+	storageService := storageservice.Service{
+		StorageRepository: &storageRepository,
+	}
 
 	// handlers init
 	postApiAuthHandler := handlers.PostApiAuthHandler{
 		AuthService: &authService,
 		JWTService:  &JWTService,
+	}
+	getApiBuyItemHandler := handlers.GetApiBuyItemHandler{
+		AuthService: &authService,
+		JWTService:  &JWTService,
+	}
+	getApiInfoHandler := handlers.GetApiInfoHandler{
+		AuthService: &authService,
+		JWTService:  &JWTService,
+	}
+	postApiSendCoinHandler := handlers.PostApiSendCoinHandler{
+		AuthService:    &authService,
+		JWTService:     &JWTService,
+		StorageService: &storageService,
 	}
 	postAdminProductsAddHandler := handlers.PostAdminProductsAddHandler{
 		AuthService:     &authService,
@@ -59,8 +84,12 @@ func NewServer(
 	}
 
 	return Server{
-		Logger:                      logger,
+		Logger: logger,
+
 		PostApiAuthHandler:          &postApiAuthHandler,
+		GetApiBuyItemHandler:        &getApiBuyItemHandler,
+		GetApiInfoHandler:           &getApiInfoHandler,
+		PostApiSendCoinHandler:      &postApiSendCoinHandler,
 		PostAdminProductsAddHandler: &postAdminProductsAddHandler,
 	}
 }
@@ -93,19 +122,54 @@ func (s Server) PostApiAuth(w http.ResponseWriter, r *http.Request) {
 // Купить предмет за монеты.
 // (GET /api/buy/{item})
 func (s Server) GetApiBuyItem(w http.ResponseWriter, r *http.Request, item string) {
-	fmt.Println("GetApiBuyItem")
+	token := r.Header.Get("Authorization")
+	err := s.GetApiBuyItemHandler.GetApiBuyItem(token, item)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process GetApiBuyItem")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // Получить информацию о монетах, инвентаре и истории транзакций.
 // (GET /api/info)
 func (s Server) GetApiInfo(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GetApiBuyItem")
+	token := r.Header.Get("Authorization")
+	response, err := s.GetApiInfoHandler.GetApiInfo(token)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process GetApiInfo")
+		return
+	}
+
+	// postAdminProductsAddEntityToResponse - incorrect
+	serverResponse := postAdminProductsAddEntityToResponse(response)
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(serverResponse)
 }
 
 // Отправить монеты другому пользователю.
 // (POST /api/sendCoin)
 func (s Server) PostApiSendCoin(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PostApiSendCoin")
+	var request api.SendCoinRequest
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&request)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail before process PostAdminProductsAdd")
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	entity := postSendCoinRequestToEntity(request)
+	err = s.PostApiSendCoinHandler.PostApiSendCoin(token, entity)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostApiSendCoin")
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // Добавление нового мерча.

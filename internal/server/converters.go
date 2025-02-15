@@ -30,3 +30,10 @@ func postAdminProductsAddEntityToResponse(id string) api.ProductAddResponse {
 		Id: id,
 	}
 }
+
+func postSendCoinRequestToEntity(request api.SendCoinRequest) entities.SendCoin {
+	return entities.SendCoin{
+		ToUser: request.ToUser,
+		Amount: request.Amount,
+	}
+}

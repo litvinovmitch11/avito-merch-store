@@ -24,7 +24,7 @@ func (h *PostApiAuthHandler) PostApiAuth(userAuth entities.UserAuth) (entities.U
 			return entities.UserToken{}, fmt.Errorf("CreateUser fail: %w", err)
 		}
 	} else if err != nil {
-		return entities.UserToken{}, err
+		return entities.UserToken{}, fmt.Errorf("AuthorizeUser fail: %w", err)
 	}
 
 	token, err := h.JWTService.NewToken(userAuth)
