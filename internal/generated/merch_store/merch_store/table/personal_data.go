@@ -20,7 +20,6 @@ type personalDataTable struct {
 	ID             postgres.ColumnString
 	UserID         postgres.ColumnString
 	HashedPassword postgres.ColumnString
-	Salt           postgres.ColumnString
 	CreatedAt      postgres.ColumnTimestamp
 	UpdatedAt      postgres.ColumnTimestamp
 
@@ -66,11 +65,10 @@ func newPersonalDataTableImpl(schemaName, tableName, alias string) personalDataT
 		IDColumn             = postgres.StringColumn("id")
 		UserIDColumn         = postgres.StringColumn("user_id")
 		HashedPasswordColumn = postgres.StringColumn("hashed_password")
-		SaltColumn           = postgres.StringColumn("salt")
 		CreatedAtColumn      = postgres.TimestampColumn("created_at")
 		UpdatedAtColumn      = postgres.TimestampColumn("updated_at")
-		allColumns           = postgres.ColumnList{IDColumn, UserIDColumn, HashedPasswordColumn, SaltColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns       = postgres.ColumnList{UserIDColumn, HashedPasswordColumn, SaltColumn, CreatedAtColumn, UpdatedAtColumn}
+		allColumns           = postgres.ColumnList{IDColumn, UserIDColumn, HashedPasswordColumn, CreatedAtColumn, UpdatedAtColumn}
+		mutableColumns       = postgres.ColumnList{UserIDColumn, HashedPasswordColumn, CreatedAtColumn, UpdatedAtColumn}
 	)
 
 	return personalDataTable{
@@ -80,7 +78,6 @@ func newPersonalDataTableImpl(schemaName, tableName, alias string) personalDataT
 		ID:             IDColumn,
 		UserID:         UserIDColumn,
 		HashedPassword: HashedPasswordColumn,
-		Salt:           SaltColumn,
 		CreatedAt:      CreatedAtColumn,
 		UpdatedAt:      UpdatedAtColumn,
 

@@ -8,6 +8,7 @@ import (
 	"github.com/litvinovmitch11/avito-merch-store/internal/connections/postgresql"
 	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 	"github.com/litvinovmitch11/avito-merch-store/internal/handlers"
+	authrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/auth"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 	authservice "github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
 	productsservice "github.com/litvinovmitch11/avito-merch-store/internal/services/products"
@@ -29,12 +30,17 @@ func NewServer(
 	postgresqlConnection := postgresql.Connection{}
 
 	// repositories init
+	authRepository := authrepo.Repository{
+		PostgresqlConnection: &postgresqlConnection,
+	}
 	productsRepository := productsrepo.Repository{
 		PostgresqlConnection: &postgresqlConnection,
 	}
 
 	// services init
-	authService := authservice.Service{}
+	authService := authservice.Service{
+		AuthRepository: &authRepository,
+	}
 	productsService := productsservice.Service{
 		ProductsRepository: &productsRepository,
 	}

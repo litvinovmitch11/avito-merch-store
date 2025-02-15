@@ -20,3 +20,18 @@ func ProductModelToEntity(model model.Products) entities.Product {
 		Price: int(model.Price),
 	}
 }
+
+func UserAuthEntityToUserModel(entity entities.UserAuth) model.Users {
+	return model.Users{
+		ID:       entity.ID,
+		Username: entity.Username,
+	}
+}
+
+func UserAuthEntityToPDModel(entity entities.UserPersonalData) model.PersonalData {
+	return model.PersonalData{
+		ID:             entity.ID,
+		UserID:         entity.UserID,
+		HashedPassword: entity.HashedPassword,
+	}
+}

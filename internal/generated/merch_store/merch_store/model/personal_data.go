@@ -15,7 +15,6 @@ type PersonalData struct {
 	ID             string `sql:"primary_key"`
 	UserID         string
 	HashedPassword string
-	Salt           string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }

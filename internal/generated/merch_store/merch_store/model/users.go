@@ -14,7 +14,6 @@ import (
 type Users struct {
 	ID        string `sql:"primary_key"`
 	Username  string
-	Balance   int32
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

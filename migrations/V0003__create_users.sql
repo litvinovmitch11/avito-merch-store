@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS merch_store.users (
     id TEXT NOT NULL PRIMARY KEY,
     username TEXT NOT NULL,
-    balance INTEGER NOT NULL CHECK (balance > 0),
     created_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
     updated_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL
 );
@@ -10,7 +9,6 @@ CREATE TABLE IF NOT EXISTS merch_store.personal_data (
     id TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL,
     hashed_password TEXT NOT NULL,
-    salt TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
     updated_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
     
