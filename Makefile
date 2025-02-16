@@ -3,7 +3,7 @@ export
 
 OAPI_CODEGEN_CONFIG_FILE=configs/oapi-codegen-config.yaml
 
-all: clean setup run-migration gen-schemas gen-api test run
+all: setup run-migration gen-schemas gen-api test run
 
 run:
 	go run cmd/app/main.go
