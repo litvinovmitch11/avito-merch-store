@@ -11,7 +11,7 @@ type ReceivedItem struct {
 }
 
 type SentItem struct {
-	ToUser string
+	ToUser *string
 	Amount int
 }
 

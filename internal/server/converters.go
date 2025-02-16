@@ -127,7 +127,7 @@ func sentToServer(items []entities.SentItem) []struct {
 			ToUser *string `json:"toUser,omitempty"`
 		}{
 			Amount: &item.Amount,
-			ToUser: &item.ToUser,
+			ToUser: item.ToUser,
 		})
 	}
 

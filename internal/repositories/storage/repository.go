@@ -314,8 +314,12 @@ func (r *Repository) GetInventory(userID string) (entities.Inventory, error) {
 func (r *Repository) GetReceived(userID string) ([]entities.ReceivedItem, error) {
 	t_q := table.Transactions.
 		SELECT(
-			table.Transactions.FromID,
+			table.Users.Username,
 			table.Transactions.Amount,
+		).
+		FROM(
+			table.Transactions.
+				LEFT_JOIN(table.Users, table.Users.ID.EQ(table.Transactions.FromID)),
 		).
 		WHERE(
 			table.Transactions.ToID.EQ(
@@ -323,7 +327,11 @@ func (r *Repository) GetReceived(userID string) ([]entities.ReceivedItem, error)
 			),
 		)
 
-	var transactions []model.Transactions
+	var transactions []struct {
+		model.Transactions
+		model.Users
+	}
+
 	err := r.PostgresqlConnection.ExecuteSelectQuery(t_q, &transactions)
 	if err != nil {
 		return nil, fmt.Errorf("ExecuteSelectQuery fail: %w", err)
@@ -335,10 +343,14 @@ func (r *Repository) GetReceived(userID string) ([]entities.ReceivedItem, error)
 }
 
 func (r *Repository) GetSent(userID string) ([]entities.SentItem, error) {
-	s_q := table.Transactions.
+	s_q := postgres.
 		SELECT(
-			table.Transactions.ToID,
+			table.Users.Username,
 			table.Transactions.Amount,
+		).
+		FROM(
+			table.Transactions.
+				LEFT_JOIN(table.Users, table.Users.ID.EQ(table.Transactions.ToID)),
 		).
 		WHERE(
 			table.Transactions.FromID.EQ(
@@ -346,7 +358,11 @@ func (r *Repository) GetSent(userID string) ([]entities.SentItem, error) {
 			),
 		)
 
-	var transactions []model.Transactions
+	var transactions []struct {
+		model.Transactions
+		model.Users
+	}
+
 	err := r.PostgresqlConnection.ExecuteSelectQuery(s_q, &transactions)
 	if err != nil {
 		return nil, fmt.Errorf("ExecuteSelectQuery fail: %w", err)

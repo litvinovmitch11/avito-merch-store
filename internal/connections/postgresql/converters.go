@@ -113,12 +113,15 @@ func InventoryToStorageModel(inventoryMap map[string]int) (string, error) {
 	return string(bytes), nil
 }
 
-func TransactionsModelToReceived(model []model.Transactions) []entities.ReceivedItem {
+func TransactionsModelToReceived(model []struct {
+	model.Transactions
+	model.Users
+}) []entities.ReceivedItem {
 	entity := make([]entities.ReceivedItem, 0, len(model))
 
 	for _, item := range model {
 		entity = append(entity, entities.ReceivedItem{
-			FromUser: item.FromID,
+			FromUser: item.Username,
 			Amount:   int(item.Amount),
 		})
 	}
@@ -126,18 +129,15 @@ func TransactionsModelToReceived(model []model.Transactions) []entities.Received
 	return entity
 }
 
-func TransactionsModelToSent(model []model.Transactions) []entities.SentItem {
+func TransactionsModelToSent(model []struct {
+	model.Transactions
+	model.Users
+}) []entities.SentItem {
 	entity := make([]entities.SentItem, 0, len(model))
 
 	for _, item := range model {
-		var toID string
-
-		if item.ToID != nil {
-			toID = *item.ToID
-		}
-
 		entity = append(entity, entities.SentItem{
-			ToUser: toID,
+			ToUser: &item.Username,
 			Amount: int(item.Amount),
 		})
 	}
