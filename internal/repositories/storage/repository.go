@@ -13,14 +13,18 @@ import (
 )
 
 var (
-	ErrBalanceNotFound = errors.New("balance not found")
-	ErrLackOfCoins     = errors.New("lack of coins")
+	ErrStorageDataNotFound = errors.New("storage data not found")
+	ErrLackOfCoins         = errors.New("lack of coins")
 )
 
 type StorageRepository interface {
 	SendCoins(sendCoin entities.SendCoin) error
-	GetBalance(userID string) (entities.Balance, error)
 	BuyMerch(sendCoin entities.SendCoin, product entities.Product) error
+
+	GetBalance(userID string) (entities.Balance, error)
+	GetInventory(userID string) (entities.Inventory, error)
+	GetReceived(userID string) ([]entities.ReceivedItem, error)
+	GetSent(userID string) ([]entities.SentItem, error)
 }
 
 type Repository struct {
@@ -54,7 +58,7 @@ func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
 	}
 
 	if len(balances) == 0 {
-		return ErrBalanceNotFound
+		return ErrStorageDataNotFound
 	}
 
 	balance := postgresql.StorageModelToEntity(balances[0])
@@ -93,19 +97,21 @@ func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
 			),
 		)
 
-	err = r.PostgresqlConnection.ExecuteSelectQueryTranscation(db, tx, s_q, &balances)
+	var balancesTo []model.Storage
+	err = r.PostgresqlConnection.ExecuteSelectQueryTranscation(db, tx, s_q, &balancesTo)
 	if err != nil {
 		return fmt.Errorf("ExecuteSelectQueryTranscation fail: %w", err)
 	}
 
-	balance = postgresql.StorageModelToEntity(balances[0])
+	balanceTo := postgresql.StorageModelToEntity(balancesTo[0])
+	fmt.Println(balanceTo)
 
 	su_q = table.Storage.
 		UPDATE(
 			table.Storage.Balance,
 		).
 		SET(
-			balance.Amount + sendCoin.Amount,
+			balanceTo.Amount + sendCoin.Amount,
 		).
 		WHERE(
 			table.Storage.UserID.EQ(
@@ -176,13 +182,13 @@ func (r *Repository) BuyMerch(sendCoin entities.SendCoin, product entities.Produ
 			return fmt.Errorf("FinishTranscation fail: %w", err)
 		}
 
-		return ErrBalanceNotFound
+		return ErrStorageDataNotFound
 	}
 
 	balance := postgresql.StorageModelToEntity(balances[0])
-	inventory, err := postgresql.StorageModelToInventory(balances[0])
+	inventory, err := postgresql.StorageModelToInventoryMap(balances[0])
 	if err != nil {
-		return fmt.Errorf("StorageModelToInventory fail: %w", err)
+		return fmt.Errorf("StorageModelToInventoryMap fail: %w", err)
 	}
 
 	if balance.Amount < sendCoin.Amount {
@@ -194,7 +200,7 @@ func (r *Repository) BuyMerch(sendCoin entities.SendCoin, product entities.Produ
 		return ErrLackOfCoins
 	}
 
-	inventory[product.Id]++
+	inventory[product.Title]++
 	storageInventory, err := postgresql.InventoryToStorageModel(inventory)
 	if err != nil {
 		err = r.PostgresqlConnection.FinishTranscation(db, tx)
@@ -270,8 +276,83 @@ func (r *Repository) GetBalance(userID string) (entities.Balance, error) {
 	}
 
 	if len(balance) == 0 {
-		return entities.Balance{}, ErrBalanceNotFound
+		return entities.Balance{}, ErrStorageDataNotFound
 	}
 
 	return postgresql.StorageModelToEntity(balance[0]), nil
+}
+
+func (r *Repository) GetInventory(userID string) (entities.Inventory, error) {
+	s_q := table.Storage.
+		SELECT(
+			table.Storage.MerchInfo,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(userID),
+			),
+		)
+
+	var storage []model.Storage
+	err := r.PostgresqlConnection.ExecuteSelectQuery(s_q, &storage)
+	if err != nil {
+		return entities.Inventory{}, fmt.Errorf("ExecuteSelectQuery fail: %w", err)
+	}
+
+	if len(storage) == 0 {
+		return entities.Inventory{}, ErrStorageDataNotFound
+	}
+
+	inventory, err := postgresql.StorageModelToInventory(storage[0])
+	if err != nil {
+		return entities.Inventory{}, fmt.Errorf("StorageModelToInventory fail: %w", err)
+	}
+
+	return inventory, nil
+}
+
+func (r *Repository) GetReceived(userID string) ([]entities.ReceivedItem, error) {
+	t_q := table.Transactions.
+		SELECT(
+			table.Transactions.FromID,
+			table.Transactions.Amount,
+		).
+		WHERE(
+			table.Transactions.ToID.EQ(
+				postgres.String(userID),
+			),
+		)
+
+	var transactions []model.Transactions
+	err := r.PostgresqlConnection.ExecuteSelectQuery(t_q, &transactions)
+	if err != nil {
+		return nil, fmt.Errorf("ExecuteSelectQuery fail: %w", err)
+	}
+
+	history := postgresql.TransactionsModelToReceived(transactions)
+
+	return history, nil
+}
+
+func (r *Repository) GetSent(userID string) ([]entities.SentItem, error) {
+	s_q := table.Transactions.
+		SELECT(
+			table.Transactions.ToID,
+			table.Transactions.Amount,
+		).
+		WHERE(
+			table.Transactions.FromID.EQ(
+				postgres.String(userID),
+			),
+		)
+
+	var transactions []model.Transactions
+	err := r.PostgresqlConnection.ExecuteSelectQuery(s_q, &transactions)
+	if err != nil {
+		return nil, fmt.Errorf("ExecuteSelectQuery fail: %w", err)
+	}
+
+	history := postgresql.TransactionsModelToSent(transactions)
+
+	return history, nil
 }

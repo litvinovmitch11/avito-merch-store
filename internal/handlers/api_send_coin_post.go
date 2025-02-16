@@ -22,12 +22,13 @@ func (h *PostApiSendCoinHandler) PostApiSendCoin(token string, sendCoin entities
 		return fmt.Errorf("ParseToken fail: %w", err)
 	}
 
-	err = h.AuthService.AuthorizeUser(userAuth)
+	userID, err := h.AuthService.AuthorizeUser(userAuth)
 	if err != nil {
 		return fmt.Errorf("AuthorizeUser fail: %w", err)
 	}
 
-	sendCoin.FromUser = userAuth.Username
+	sendCoin.FromUser = userID
+
 	err = h.StorageService.SendCoins(sendCoin)
 	if err != nil {
 		return fmt.Errorf("SendCoins fail: %w", err)

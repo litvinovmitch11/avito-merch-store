@@ -20,12 +20,12 @@ func (h *GetApiBuyItemHandler) GetApiBuyItem(token string, item string) error {
 		return fmt.Errorf("ParseToken fail: %w", err)
 	}
 
-	err = h.AuthService.AuthorizeUser(userAuth)
+	userID, err := h.AuthService.AuthorizeUser(userAuth)
 	if err != nil {
 		return fmt.Errorf("AuthorizeUser fail: %w", err)
 	}
 
-	err = h.StorageService.BuyMerch(userAuth.Username, item)
+	err = h.StorageService.BuyMerch(userID, item)
 	if err != nil {
 		return fmt.Errorf("BuyMerch fail: %w", err)
 	}

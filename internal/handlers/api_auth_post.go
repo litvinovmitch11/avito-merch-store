@@ -17,7 +17,7 @@ type PostApiAuthHandler struct {
 }
 
 func (h *PostApiAuthHandler) PostApiAuth(userAuth entities.UserAuth) (entities.UserToken, error) {
-	err := h.AuthService.AuthorizeUser(userAuth)
+	_, err := h.AuthService.AuthorizeUser(userAuth)
 	if errors.Is(err, authrepo.ErrUserNotFound) || errors.Is(err, authrepo.ErrPDNotFound) {
 		_, err = h.AuthService.CreateUser(userAuth)
 		if err != nil {

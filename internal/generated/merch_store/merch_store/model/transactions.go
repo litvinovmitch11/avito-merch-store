@@ -15,7 +15,7 @@ type Transactions struct {
 	ID        string `sql:"primary_key"`
 	FromID    string
 	ToID      *string
-	Amount    *int32
+	Amount    int32
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

@@ -22,7 +22,7 @@ func (h *PostAdminProductsAddHandler) PostAdminProductsAdd(token string, product
 		return "", fmt.Errorf("ParseToken fail: %w", err)
 	}
 
-	err = h.AuthService.AuthorizeUser(userAuth)
+	_, err = h.AuthService.AuthorizeUser(userAuth)
 	if err != nil {
 		return "", fmt.Errorf("AuthorizeUser fail: %w", err)
 	}

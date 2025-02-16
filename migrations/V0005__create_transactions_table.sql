@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS merch_store.transactions (
     id TEXT NOT NULL PRIMARY KEY,
     from_id TEXT NOT NULL,
     to_id TEXT,
-    amount INTEGER CHECK (amount > 0),
+    amount INTEGER CHECK (amount > 0) NOT NULL,
     created_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
     updated_at TIMESTAMP DEFAULT TIMEZONE('UTC'::TEXT, NOW()) NOT NULL,
 

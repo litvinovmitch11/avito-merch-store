@@ -71,13 +71,19 @@ func StorageModelToEntity(model model.Storage) entities.Balance {
 	}
 }
 
-type InventoryItem struct {
-	Type     string `json:"type"`
-	Quantity int    `json:"quantity"`
+func StorageModelToInventory(model model.Storage) (entities.Inventory, error) {
+	var inventory entities.Inventory
+
+	err := json.Unmarshal([]byte(model.MerchInfo), &inventory)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal fail: %w", err)
+	}
+
+	return inventory, nil
 }
 
-func StorageModelToInventory(model model.Storage) (map[string]int, error) {
-	var inventory []InventoryItem
+func StorageModelToInventoryMap(model model.Storage) (map[string]int, error) {
+	var inventory entities.Inventory
 
 	err := json.Unmarshal([]byte(model.MerchInfo), &inventory)
 	if err != nil {
@@ -93,10 +99,10 @@ func StorageModelToInventory(model model.Storage) (map[string]int, error) {
 }
 
 func InventoryToStorageModel(inventoryMap map[string]int) (string, error) {
-	inventory := make([]InventoryItem, 0, len(inventoryMap))
+	inventory := make(entities.Inventory, 0, len(inventoryMap))
 
 	for t, q := range inventoryMap {
-		inventory = append(inventory, InventoryItem{Type: t, Quantity: q})
+		inventory = append(inventory, entities.InventoryItem{Type: t, Quantity: q})
 	}
 
 	bytes, err := json.Marshal(inventory)
@@ -105,4 +111,36 @@ func InventoryToStorageModel(inventoryMap map[string]int) (string, error) {
 	}
 
 	return string(bytes), nil
+}
+
+func TransactionsModelToReceived(model []model.Transactions) []entities.ReceivedItem {
+	entity := make([]entities.ReceivedItem, 0, len(model))
+
+	for _, item := range model {
+		entity = append(entity, entities.ReceivedItem{
+			FromUser: item.FromID,
+			Amount:   int(item.Amount),
+		})
+	}
+
+	return entity
+}
+
+func TransactionsModelToSent(model []model.Transactions) []entities.SentItem {
+	entity := make([]entities.SentItem, 0, len(model))
+
+	for _, item := range model {
+		var toID string
+
+		if item.ToID != nil {
+			toID = *item.ToID
+		}
+
+		entity = append(entity, entities.SentItem{
+			ToUser: toID,
+			Amount: int(item.Amount),
+		})
+	}
+
+	return entity
 }

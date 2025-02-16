@@ -72,8 +72,9 @@ func NewServer(
 		StorageService: &storageService,
 	}
 	getApiInfoHandler := handlers.GetApiInfoHandler{
-		AuthService: &authService,
-		JWTService:  &JWTService,
+		AuthService:    &authService,
+		JWTService:     &JWTService,
+		StorageService: &storageService,
 	}
 	postApiSendCoinHandler := handlers.PostApiSendCoinHandler{
 		AuthService:    &authService,
@@ -145,8 +146,7 @@ func (s Server) GetApiInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// postAdminProductsAddEntityToResponse - incorrect
-	serverResponse := postAdminProductsAddEntityToResponse(response)
+	serverResponse := getApiInfoEntityToResponse(response)
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(serverResponse)
