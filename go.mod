@@ -4,6 +4,8 @@ go 1.24.0
 
 tool (
 	github.com/go-jet/jet/v2/cmd/jet
+	github.com/golang/mock/gomock
+	github.com/golang/mock/mockgen
 	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
 )
 
@@ -16,6 +18,7 @@ require (
 require (
 	github.com/go-jet/jet/v2 v2.12.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/zerolog v1.15.0
