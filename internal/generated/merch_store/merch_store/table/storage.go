@@ -22,6 +22,7 @@ type storageTable struct {
 	Balance   postgres.ColumnInteger
 	CreatedAt postgres.ColumnTimestamp
 	UpdatedAt postgres.ColumnTimestamp
+	MerchInfo postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,8 +68,9 @@ func newStorageTableImpl(schemaName, tableName, alias string) storageTable {
 		BalanceColumn   = postgres.IntegerColumn("balance")
 		CreatedAtColumn = postgres.TimestampColumn("created_at")
 		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
-		allColumns      = postgres.ColumnList{IDColumn, UserIDColumn, BalanceColumn, CreatedAtColumn, UpdatedAtColumn}
-		mutableColumns  = postgres.ColumnList{UserIDColumn, BalanceColumn, CreatedAtColumn, UpdatedAtColumn}
+		MerchInfoColumn = postgres.StringColumn("merch_info")
+		allColumns      = postgres.ColumnList{IDColumn, UserIDColumn, BalanceColumn, CreatedAtColumn, UpdatedAtColumn, MerchInfoColumn}
+		mutableColumns  = postgres.ColumnList{UserIDColumn, BalanceColumn, CreatedAtColumn, UpdatedAtColumn, MerchInfoColumn}
 	)
 
 	return storageTable{
@@ -80,6 +82,7 @@ func newStorageTableImpl(schemaName, tableName, alias string) storageTable {
 		Balance:   BalanceColumn,
 		CreatedAt: CreatedAtColumn,
 		UpdatedAt: UpdatedAtColumn,
+		MerchInfo: MerchInfoColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

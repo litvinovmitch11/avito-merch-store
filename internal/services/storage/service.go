@@ -56,13 +56,13 @@ func (s *Service) BuyMerch(username, merch string) error {
 		return fmt.Errorf("GetUserByUsername fail: %w", err)
 	}
 
-	entity := entities.SendCoin{
+	sendCoin := entities.SendCoin{
 		FromUser: user.ID,
 		ToUser:   "",
 		Amount:   product.Price,
 	}
 
-	err = s.StorageRepository.SendCoins(entity)
+	err = s.StorageRepository.BuyMerch(sendCoin, product)
 	if err != nil {
 		return fmt.Errorf("SendCoins fail: %w", err)
 	}

@@ -17,4 +17,5 @@ type Storage struct {
 	Balance   int32
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	MerchInfo string
 }

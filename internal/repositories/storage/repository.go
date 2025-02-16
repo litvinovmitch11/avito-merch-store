@@ -20,6 +20,7 @@ var (
 type StorageRepository interface {
 	SendCoins(sendCoin entities.SendCoin) error
 	GetBalance(userID string) (entities.Balance, error)
+	BuyMerch(sendCoin entities.SendCoin, product entities.Product) error
 }
 
 type Repository struct {
@@ -80,32 +81,6 @@ func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
 		return fmt.Errorf("ExecuteUpdateQueryTranscation fail: %w", err)
 	}
 
-	if sendCoin.ToUser == "" {
-		t_q := table.Transactions.
-			INSERT(
-				table.Transactions.ID,
-				table.Transactions.FromID,
-				table.Transactions.Amount,
-			).
-			VALUES(
-				uuid.NewString(),
-				sendCoin.FromUser,
-				sendCoin.Amount,
-			)
-
-		err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, t_q)
-		if err != nil {
-			return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
-		}
-
-		err = r.PostgresqlConnection.FinishTranscation(db, tx)
-		if err != nil {
-			return fmt.Errorf("FinishTranscation fail: %w", err)
-		}
-
-		return nil
-	}
-
 	s_q = table.Storage.
 		SELECT(
 			table.Storage.ID,
@@ -154,6 +129,111 @@ func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
 			uuid.NewString(),
 			sendCoin.FromUser,
 			sendCoin.ToUser,
+			sendCoin.Amount,
+		)
+
+	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, t_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
+	}
+
+	err = r.PostgresqlConnection.FinishTranscation(db, tx)
+	if err != nil {
+		return fmt.Errorf("FinishTranscation fail: %w", err)
+	}
+
+	return nil
+}
+
+func (r *Repository) BuyMerch(sendCoin entities.SendCoin, product entities.Product) error {
+	db, tx, err := r.PostgresqlConnection.CreateTranscation()
+	if err != nil {
+		return fmt.Errorf("CreateTranscation fail: %w", err)
+	}
+
+	s_q := table.Storage.
+		SELECT(
+			table.Storage.ID,
+			table.Storage.UserID,
+			table.Storage.Balance,
+			table.Storage.MerchInfo,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(sendCoin.FromUser),
+			),
+		)
+
+	var balances []model.Storage
+	err = r.PostgresqlConnection.ExecuteSelectQueryTranscation(db, tx, s_q, &balances)
+	if err != nil {
+		return fmt.Errorf("ExecuteSelectQueryTranscation fail: %w", err)
+	}
+
+	if len(balances) == 0 {
+		err = r.PostgresqlConnection.FinishTranscation(db, tx)
+		if err != nil {
+			return fmt.Errorf("FinishTranscation fail: %w", err)
+		}
+
+		return ErrBalanceNotFound
+	}
+
+	balance := postgresql.StorageModelToEntity(balances[0])
+	inventory, err := postgresql.StorageModelToInventory(balances[0])
+	if err != nil {
+		return fmt.Errorf("StorageModelToInventory fail: %w", err)
+	}
+
+	if balance.Amount < sendCoin.Amount {
+		err = r.PostgresqlConnection.FinishTranscation(db, tx)
+		if err != nil {
+			return fmt.Errorf("FinishTranscation fail: %w", err)
+		}
+
+		return ErrLackOfCoins
+	}
+
+	inventory[product.Id]++
+	storageInventory, err := postgresql.InventoryToStorageModel(inventory)
+	if err != nil {
+		err = r.PostgresqlConnection.FinishTranscation(db, tx)
+		if err != nil {
+			return fmt.Errorf("FinishTranscation fail: %w", err)
+		}
+
+		return fmt.Errorf("InventoryToStorageModel fail: %w", err)
+	}
+
+	su_q := table.Storage.
+		UPDATE(
+			table.Storage.Balance,
+			table.Storage.MerchInfo,
+		).
+		SET(
+			balance.Amount-sendCoin.Amount,
+			storageInventory,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(sendCoin.FromUser),
+			),
+		)
+
+	err = r.PostgresqlConnection.ExecuteUpdateQueryTranscation(db, tx, su_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteUpdateQueryTranscation fail: %w", err)
+	}
+
+	t_q := table.Transactions.
+		INSERT(
+			table.Transactions.ID,
+			table.Transactions.FromID,
+			table.Transactions.Amount,
+		).
+		VALUES(
+			uuid.NewString(),
+			sendCoin.FromUser,
 			sendCoin.Amount,
 		)
 

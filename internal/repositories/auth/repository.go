@@ -70,17 +70,19 @@ func (r *Repository) CreateUser(user entities.User, userPD entities.UserPersonal
 		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
 	}
 
-	s_m := postgresql.BalaceEntityToStorageModel(balance)
+	s_m := postgresql.DefaultBalaceEntityToStorageModel(balance)
 	s_q := table.Storage.
 		INSERT(
 			table.Storage.ID,
 			table.Storage.UserID,
 			table.Storage.Balance,
+			table.Storage.MerchInfo,
 		).
 		VALUES(
 			s_m.ID,
 			s_m.UserID,
 			s_m.Balance,
+			s_m.MerchInfo,
 		)
 
 	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, s_q)
