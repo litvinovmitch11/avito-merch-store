@@ -5,11 +5,13 @@ import (
 
 	"github.com/litvinovmitch11/avito-merch-store/internal/services/auth"
 	"github.com/litvinovmitch11/avito-merch-store/internal/services/jwt"
+	"github.com/litvinovmitch11/avito-merch-store/internal/services/storage"
 )
 
 type GetApiBuyItemHandler struct {
-	AuthService auth.AuthService
-	JWTService  jwt.JWTService
+	AuthService    auth.AuthService
+	JWTService     jwt.JWTService
+	StorageService storage.StorageService
 }
 
 func (h *GetApiBuyItemHandler) GetApiBuyItem(token string, item string) error {
@@ -23,10 +25,10 @@ func (h *GetApiBuyItemHandler) GetApiBuyItem(token string, item string) error {
 		return fmt.Errorf("AuthorizeUser fail: %w", err)
 	}
 
-	// id, err := h.ProductsService.AddProduct(product)
-	// if err != nil {
-	// 	return id, fmt.Errorf("AddProduct fail: %w", err)
-	// }
+	err = h.StorageService.BuyMerch(userAuth.Username, item)
+	if err != nil {
+		return fmt.Errorf("BuyMerch fail: %w", err)
+	}
 
 	return nil
 }

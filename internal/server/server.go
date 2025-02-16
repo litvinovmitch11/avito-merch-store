@@ -67,8 +67,9 @@ func NewServer(
 		JWTService:  &JWTService,
 	}
 	getApiBuyItemHandler := handlers.GetApiBuyItemHandler{
-		AuthService: &authService,
-		JWTService:  &JWTService,
+		AuthService:    &authService,
+		JWTService:     &JWTService,
+		StorageService: &storageService,
 	}
 	getApiInfoHandler := handlers.GetApiInfoHandler{
 		AuthService: &authService,

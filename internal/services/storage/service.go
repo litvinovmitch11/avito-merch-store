@@ -11,7 +11,7 @@ import (
 
 type StorageService interface {
 	SendCoins(sendCoin entities.SendCoin) error
-	BuyMerch(userID, merchID string) error
+	BuyMerch(username, merchID string) error
 }
 
 type Service struct {
@@ -45,19 +45,27 @@ func (s *Service) SendCoins(sendCoin entities.SendCoin) error {
 	return nil
 }
 
-func (s *Service) BuyMerch(userID, merchID string) error {
-	// s.ProductsRepository.GetProduct()
+func (s *Service) BuyMerch(username, merch string) error {
+	product, err := s.ProductsRepository.GetProductByTitle(merch)
+	if err != nil {
+		return fmt.Errorf("GetProduct fail: %w", err)
+	}
 
-	// entity := entities.SendCoin{
-	// 	FromUser: userID,
-	// 	ToUser: "",
-	// 	Amount: ,
-	// }
+	user, err := s.AuthRepository.GetUserByUsername(username)
+	if err != nil {
+		return fmt.Errorf("GetUserByUsername fail: %w", err)
+	}
 
-	// err := s.StorageRepository.SendCoins()
-	// if err != nil {
-	// 	return fmt.Errorf("SendCoins fail: %w", err)
-	// }
+	entity := entities.SendCoin{
+		FromUser: user.ID,
+		ToUser:   "",
+		Amount:   product.Price,
+	}
+
+	err = s.StorageRepository.SendCoins(entity)
+	if err != nil {
+		return fmt.Errorf("SendCoins fail: %w", err)
+	}
 
 	return nil
 }
