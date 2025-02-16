@@ -3,6 +3,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -22,7 +23,7 @@ type Service struct{}
 
 var _ JWTService = (*Service)(nil)
 
-var secret = "uuid.NewString()"
+var secret = os.Getenv("JWTSECRET")
 
 func (s *Service) NewToken(userAuth entities.UserAuth) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

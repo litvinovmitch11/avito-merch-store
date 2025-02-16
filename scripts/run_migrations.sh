@@ -10,6 +10,6 @@ do
   (( cnt++ ))
   if (( from <= cnt )) && (( (( cnt <= to )) || (( to == 0 )) )); then 
     echo "$migration"
-    PGPASSWORD=postgres psql -h localhost -d merch_store -U postgres -p 5432 -a -w -f $migration
+    PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -p $PGPORT -a -w -f $migration
   fi
 done

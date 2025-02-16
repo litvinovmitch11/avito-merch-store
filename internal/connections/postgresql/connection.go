@@ -3,6 +3,8 @@ package postgresql
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/go-jet/jet/v2/postgres"
 	_ "github.com/lib/pq"
@@ -26,7 +28,12 @@ type Connection struct{}
 var _ PostgresqlConnection = (*Connection)(nil)
 
 func (c *Connection) ExecuteSelectQuery(st postgres.SelectStatement, dest interface{}) error {
-	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", "localhost", 5432, "postgres", "postgres", "merch_store")
+	password := os.Getenv("PGPASSWORD")
+	host := os.Getenv("PGHOST")
+	user := os.Getenv("PGUSER")
+	port, _ := strconv.Atoi(os.Getenv("PGPORT"))
+
+	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, "merch_store")
 
 	db, err := sql.Open("postgres", connectString)
 	if err != nil {
@@ -43,7 +50,12 @@ func (c *Connection) ExecuteSelectQuery(st postgres.SelectStatement, dest interf
 }
 
 func (c *Connection) ExecuteInsertQuery(st postgres.InsertStatement) error {
-	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", "localhost", 5432, "postgres", "postgres", "merch_store")
+	password := os.Getenv("PGPASSWORD")
+	host := os.Getenv("PGHOST")
+	user := os.Getenv("PGUSER")
+	port, _ := strconv.Atoi(os.Getenv("PGPORT"))
+
+	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, "merch_store")
 
 	db, err := sql.Open("postgres", connectString)
 	if err != nil {
@@ -60,7 +72,12 @@ func (c *Connection) ExecuteInsertQuery(st postgres.InsertStatement) error {
 }
 
 func (c *Connection) ExecuteUpdateQuery(st postgres.UpdateStatement) error {
-	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", "localhost", 5432, "postgres", "postgres", "merch_store")
+	password := os.Getenv("PGPASSWORD")
+	host := os.Getenv("PGHOST")
+	user := os.Getenv("PGUSER")
+	port, _ := strconv.Atoi(os.Getenv("PGPORT"))
+
+	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, "merch_store")
 
 	db, err := sql.Open("postgres", connectString)
 	if err != nil {
@@ -77,7 +94,12 @@ func (c *Connection) ExecuteUpdateQuery(st postgres.UpdateStatement) error {
 }
 
 func (c *Connection) CreateTranscation() (*sql.DB, *sql.Tx, error) {
-	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", "localhost", 5432, "postgres", "postgres", "merch_store")
+	password := os.Getenv("PGPASSWORD")
+	host := os.Getenv("PGHOST")
+	user := os.Getenv("PGUSER")
+	port, _ := strconv.Atoi(os.Getenv("PGPORT"))
+
+	var connectString = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, "merch_store")
 
 	db, err := sql.Open("postgres", connectString)
 	if err != nil {
