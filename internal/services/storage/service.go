@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
+	authrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/auth"
 	productsrepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/products"
 	storagerepo "github.com/litvinovmitch11/avito-merch-store/internal/repositories/storage"
 )
@@ -14,6 +15,7 @@ type StorageService interface {
 }
 
 type Service struct {
+	AuthRepository     authrepo.AuthRepository
 	ProductsRepository productsrepo.ProductsRepository
 	StorageRepository  storagerepo.StorageRepository
 }
@@ -21,17 +23,21 @@ type Service struct {
 var _ StorageService = (*Service)(nil)
 
 func (s *Service) SendCoins(sendCoin entities.SendCoin) error {
-	// user, err := s.AuthRepository.GetUserByUsername(userAuth.Username)
-	// if err != nil {
-	// 	return fmt.Errorf("GetUserByUsername fail: %w", err)
-	// }
+	fromUser, err := s.AuthRepository.GetUserByUsername(sendCoin.FromUser)
+	if err != nil {
+		return fmt.Errorf("GetUserByUsername fail: %w", err)
+	}
 
-	// user, err := s.AuthRepository.GetUserByUsername(userAuth.Username)
-	// if err != nil {
-	// 	return fmt.Errorf("GetUserByUsername fail: %w", err)
-	// }
+	sendCoin.FromUser = fromUser.ID
 
-	err := s.StorageRepository.SendCoins(sendCoin)
+	toUser, err := s.AuthRepository.GetUserByUsername(sendCoin.ToUser)
+	if err != nil {
+		return fmt.Errorf("GetUserByUsername fail: %w", err)
+	}
+
+	sendCoin.ToUser = toUser.ID
+
+	err = s.StorageRepository.SendCoins(sendCoin)
 	if err != nil {
 		return fmt.Errorf("SendCoins fail: %w", err)
 	}

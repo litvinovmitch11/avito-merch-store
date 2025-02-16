@@ -56,6 +56,7 @@ func NewServer(
 		ProductsRepository: &productsRepository,
 	}
 	storageService := storageservice.Service{
+		AuthRepository:     &authRepository,
 		ProductsRepository: &productsRepository,
 		StorageRepository:  &storageRepository,
 	}

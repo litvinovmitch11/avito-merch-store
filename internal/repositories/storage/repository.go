@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-jet/jet/v2/postgres"
+	"github.com/google/uuid"
 	"github.com/litvinovmitch11/avito-merch-store/internal/connections/postgresql"
 	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
 	"github.com/litvinovmitch11/avito-merch-store/internal/generated/merch_store/merch_store/model"
@@ -28,13 +29,6 @@ type Repository struct {
 var _ StorageRepository = (*Repository)(nil)
 
 func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
-	// под транзакцией получить баланс
-
-	// под транзакцией удалить деньги у первого
-	// под транзакцией удалить дать денег второму
-	// записать 1 транзакцию
-	// записать 2 транзакцию
-
 	db, tx, err := r.PostgresqlConnection.CreateTranscation()
 	if err != nil {
 		return fmt.Errorf("CreateTranscation fail: %w", err)
@@ -66,6 +60,106 @@ func (r *Repository) SendCoins(sendCoin entities.SendCoin) error {
 
 	if balance.Amount < sendCoin.Amount {
 		return ErrLackOfCoins
+	}
+
+	su_q := table.Storage.
+		UPDATE(
+			table.Storage.Balance,
+		).
+		SET(
+			balance.Amount - sendCoin.Amount,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(sendCoin.FromUser),
+			),
+		)
+
+	err = r.PostgresqlConnection.ExecuteUpdateQueryTranscation(db, tx, su_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteUpdateQueryTranscation fail: %w", err)
+	}
+
+	if sendCoin.ToUser == "" {
+		t_q := table.Transactions.
+			INSERT(
+				table.Transactions.ID,
+				table.Transactions.FromID,
+				table.Transactions.Amount,
+			).
+			VALUES(
+				uuid.NewString(),
+				sendCoin.FromUser,
+				sendCoin.Amount,
+			)
+
+		err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, t_q)
+		if err != nil {
+			return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
+		}
+
+		err = r.PostgresqlConnection.FinishTranscation(db, tx)
+		if err != nil {
+			return fmt.Errorf("FinishTranscation fail: %w", err)
+		}
+
+		return nil
+	}
+
+	s_q = table.Storage.
+		SELECT(
+			table.Storage.ID,
+			table.Storage.UserID,
+			table.Storage.Balance,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(sendCoin.ToUser),
+			),
+		)
+
+	err = r.PostgresqlConnection.ExecuteSelectQueryTranscation(db, tx, s_q, &balances)
+	if err != nil {
+		return fmt.Errorf("ExecuteSelectQueryTranscation fail: %w", err)
+	}
+
+	balance = postgresql.StorageModelToEntity(balances[0])
+
+	su_q = table.Storage.
+		UPDATE(
+			table.Storage.Balance,
+		).
+		SET(
+			balance.Amount + sendCoin.Amount,
+		).
+		WHERE(
+			table.Storage.UserID.EQ(
+				postgres.String(sendCoin.ToUser),
+			),
+		)
+
+	err = r.PostgresqlConnection.ExecuteUpdateQueryTranscation(db, tx, su_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteUpdateQueryTranscation fail: %w", err)
+	}
+
+	t_q := table.Transactions.
+		INSERT(
+			table.Transactions.ID,
+			table.Transactions.FromID,
+			table.Transactions.ToID,
+			table.Transactions.Amount,
+		).
+		VALUES(
+			uuid.NewString(),
+			sendCoin.FromUser,
+			sendCoin.ToUser,
+			sendCoin.Amount,
+		)
+
+	err = r.PostgresqlConnection.ExecuteInsertQueryTranscation(db, tx, t_q)
+	if err != nil {
+		return fmt.Errorf("ExecuteInsertQueryTranscation fail: %w", err)
 	}
 
 	err = r.PostgresqlConnection.FinishTranscation(db, tx)
