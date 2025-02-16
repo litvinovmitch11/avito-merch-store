@@ -121,6 +121,8 @@ func (s Server) PostApiAuth(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
 			Errors: &msg,
 		})
+
+		return
 	}
 
 	response, err := s.PostApiAuthHandler.PostApiAuth(entity)
@@ -229,6 +231,8 @@ func (s Server) PostApiSendCoin(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
 			Errors: &msg,
 		})
+
+		return
 	}
 
 	err = s.PostApiSendCoinHandler.PostApiSendCoin(token, entity)
@@ -277,6 +281,8 @@ func (s Server) PostAdminProductsAdd(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
 			Errors: &msg,
 		})
+
+		return
 	}
 
 	response, err := s.PostAdminProductsAddHandler.PostAdminProductsAdd(token, entity)
