@@ -39,17 +39,13 @@ func TestPostAdminProductsAdd_SimpleTest(t *testing.T) {
 
 	gomock.InOrder(
 		JWTService.EXPECT().ParseToken(token).Return(userAuth, nil),
-	)
-	gomock.InOrder(
 		authService.EXPECT().AuthorizeUser(userAuth).Return("", nil),
-	)
-	gomock.InOrder(
 		productsService.EXPECT().AddProduct(product).Return(expectedProductID, nil),
 	)
 
 	productID, err := postAdminProductsAddHandler.PostAdminProductsAdd(token, product)
 	if err != nil {
-		t.Errorf("userPostAdminProductsAdd fail: %v", err)
+		t.Errorf("PostAdminProductsAdd fail: %v", err)
 	}
 
 	if productID != expectedProductID {

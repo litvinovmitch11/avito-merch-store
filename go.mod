@@ -4,7 +4,6 @@ go 1.24.0
 
 tool (
 	github.com/go-jet/jet/v2/cmd/jet
-	github.com/golang/mock/gomock
 	github.com/golang/mock/mockgen
 	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
 )
