@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/litvinovmitch11/avito-merch-store/internal/connections/postgresql"
@@ -110,10 +111,35 @@ func (s Server) PostApiAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entity := postApiAuthRequestToEntity(request)
+	entity, err := postApiAuthRequestToEntity(request)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostApiAuth")
+
+		w.WriteHeader(http.StatusBadRequest)
+		msg := "bad request"
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+	}
+
 	response, err := s.PostApiAuthHandler.PostApiAuth(entity)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process PostApiAuth")
+
+		msg := ""
+		if errors.Is(err, jwtservice.ErrInvalidToken) || errors.Is(err, authservice.ErrUnauthorized) {
+			w.WriteHeader(http.StatusUnauthorized)
+			msg = "unauthorize"
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg = "internal error"
+		}
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+
 		return
 	}
 
@@ -130,6 +156,20 @@ func (s Server) GetApiBuyItem(w http.ResponseWriter, r *http.Request, item strin
 	err := s.GetApiBuyItemHandler.GetApiBuyItem(token, item)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process GetApiBuyItem")
+
+		msg := ""
+		if errors.Is(err, jwtservice.ErrInvalidToken) || errors.Is(err, authservice.ErrUnauthorized) {
+			w.WriteHeader(http.StatusUnauthorized)
+			msg = "unauthorize"
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg = "internal error"
+		}
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+
 		return
 	}
 
@@ -143,6 +183,20 @@ func (s Server) GetApiInfo(w http.ResponseWriter, r *http.Request) {
 	response, err := s.GetApiInfoHandler.GetApiInfo(token)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process GetApiInfo")
+
+		msg := ""
+		if errors.Is(err, jwtservice.ErrInvalidToken) || errors.Is(err, authservice.ErrUnauthorized) {
+			w.WriteHeader(http.StatusUnauthorized)
+			msg = "unauthorize"
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg = "internal error"
+		}
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+
 		return
 	}
 
@@ -160,15 +214,40 @@ func (s Server) PostApiSendCoin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&request)
 	if err != nil {
-		s.Logger.Error().Err(err).Msg("fail before process PostAdminProductsAdd")
+		s.Logger.Error().Err(err).Msg("fail before process PostApiSendCoin")
 		return
 	}
 
 	token := r.Header.Get("Authorization")
-	entity := postSendCoinRequestToEntity(request)
+	entity, err := postSendCoinRequestToEntity(request)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostApiSendCoin")
+
+		w.WriteHeader(http.StatusBadRequest)
+		msg := "bad request"
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+	}
+
 	err = s.PostApiSendCoinHandler.PostApiSendCoin(token, entity)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process PostApiSendCoin")
+
+		msg := ""
+		if errors.Is(err, jwtservice.ErrInvalidToken) || errors.Is(err, authservice.ErrUnauthorized) {
+			w.WriteHeader(http.StatusUnauthorized)
+			msg = "unauthorize"
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg = "internal error"
+		}
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+
 		return
 	}
 
@@ -188,10 +267,35 @@ func (s Server) PostAdminProductsAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := r.Header.Get("Authorization")
-	entity := postAdminProductsAddToEntity(request)
+	entity, err := postAdminProductsAddToEntity(request)
+	if err != nil {
+		s.Logger.Error().Err(err).Msg("fail while process PostAdminProductsAdd")
+
+		w.WriteHeader(http.StatusBadRequest)
+		msg := "bad request"
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+	}
+
 	response, err := s.PostAdminProductsAddHandler.PostAdminProductsAdd(token, entity)
 	if err != nil {
 		s.Logger.Error().Err(err).Msg("fail while process PostAdminProductsAdd")
+
+		msg := ""
+		if errors.Is(err, jwtservice.ErrInvalidToken) || errors.Is(err, authservice.ErrUnauthorized) {
+			w.WriteHeader(http.StatusUnauthorized)
+			msg = "unauthorize"
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			msg = "internal error"
+		}
+
+		_ = json.NewEncoder(w).Encode(api.ErrorResponse{
+			Errors: &msg,
+		})
+
 		return
 	}
 

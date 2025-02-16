@@ -1,15 +1,29 @@
 package server
 
 import (
+	"errors"
+
 	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
 	"github.com/litvinovmitch11/avito-merch-store/internal/generated/api"
 )
 
-func postApiAuthRequestToEntity(request api.AuthRequest) entities.UserAuth {
+var (
+	ErrInvalidRequest = errors.New("invalid request")
+)
+
+func postApiAuthRequestToEntity(request api.AuthRequest) (entities.UserAuth, error) {
+	if request.Username == "" {
+		return entities.UserAuth{}, ErrInvalidRequest
+	}
+
+	if request.Password == "" {
+		return entities.UserAuth{}, ErrInvalidRequest
+	}
+
 	return entities.UserAuth{
 		Username: request.Username,
 		Password: request.Password,
-	}
+	}, nil
 }
 
 func postApiAuthEntityToResponse(entity entities.UserToken) api.AuthResponse {
@@ -18,11 +32,19 @@ func postApiAuthEntityToResponse(entity entities.UserToken) api.AuthResponse {
 	}
 }
 
-func postAdminProductsAddToEntity(request api.ProductAddRequest) entities.Product {
+func postAdminProductsAddToEntity(request api.ProductAddRequest) (entities.Product, error) {
+	if request.Price == 0 {
+		return entities.Product{}, ErrInvalidRequest
+	}
+
+	if request.Title == "" {
+		return entities.Product{}, ErrInvalidRequest
+	}
+
 	return entities.Product{
 		Title: request.Title,
 		Price: request.Price,
-	}
+	}, nil
 }
 
 func postAdminProductsAddEntityToResponse(id string) api.ProductAddResponse {
@@ -31,11 +53,19 @@ func postAdminProductsAddEntityToResponse(id string) api.ProductAddResponse {
 	}
 }
 
-func postSendCoinRequestToEntity(request api.SendCoinRequest) entities.SendCoin {
+func postSendCoinRequestToEntity(request api.SendCoinRequest) (entities.SendCoin, error) {
+	if request.Amount == 0 {
+		return entities.SendCoin{}, ErrInvalidRequest
+	}
+
+	if request.ToUser == "" {
+		return entities.SendCoin{}, ErrInvalidRequest
+	}
+
 	return entities.SendCoin{
 		ToUser: request.ToUser,
 		Amount: request.Amount,
-	}
+	}, nil
 }
 
 func inventoryToServer(items []entities.InventoryItem) []struct {

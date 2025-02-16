@@ -9,6 +9,10 @@ import (
 	"github.com/litvinovmitch11/avito-merch-store/internal/entities"
 )
 
+var (
+	ErrInvalidToken = errors.New("invalid token")
+)
+
 type JWTService interface {
 	NewToken(userAuth entities.UserAuth) (string, error)
 	ParseToken(tokenString string) (entities.UserAuth, error)
@@ -44,39 +48,33 @@ func (s *Service) ParseToken(tokenString string) (entities.UserAuth, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return entities.UserAuth{}, err
+		return entities.UserAuth{}, fmt.Errorf("jwt.Parse fail: %w: %w", err, ErrInvalidToken)
 	}
 
-	if tokenParsed.Valid {
-		fmt.Println("You look nice today")
-	} else if ve, ok := err.(*jwt.ValidationError); ok {
+	if ve, ok := err.(*jwt.ValidationError); !tokenParsed.Valid && ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			fmt.Println("That's not even a token")
+			return entities.UserAuth{}, fmt.Errorf("that's not even a token: %w", ErrInvalidToken)
 		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-			// Token is either expired or not active yet
-			fmt.Println("Timing is everything")
-		} else {
-			fmt.Println("Couldn't handle this token:", err)
+			return entities.UserAuth{}, fmt.Errorf("timing is everything: %w", ErrInvalidToken)
 		}
-		return entities.UserAuth{}, errors.New("123")
-	} else {
-		fmt.Println("Couldn't handle this token:", err)
-		return entities.UserAuth{}, errors.New("321")
+		return entities.UserAuth{}, fmt.Errorf("couldn't handle this token: %w: %w", err, ErrInvalidToken)
+	} else if !tokenParsed.Valid {
+		return entities.UserAuth{}, fmt.Errorf("couldn't handle this token: %w: %w", err, ErrInvalidToken)
 	}
 
 	claims, ok := tokenParsed.Claims.(jwt.MapClaims)
 	if !ok || !tokenParsed.Valid {
-		return entities.UserAuth{}, errors.New("qwe")
+		return entities.UserAuth{}, fmt.Errorf("couldn't parse this token: %w", ErrInvalidToken)
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return entities.UserAuth{}, errors.New("qwe")
+		return entities.UserAuth{}, fmt.Errorf("couldn't parse this token: %w", ErrInvalidToken)
 	}
 
 	password, ok := claims["password"].(string)
 	if !ok {
-		return entities.UserAuth{}, errors.New("qwe")
+		return entities.UserAuth{}, fmt.Errorf("couldn't parse this token: %w", ErrInvalidToken)
 	}
 
 	return entities.UserAuth{
